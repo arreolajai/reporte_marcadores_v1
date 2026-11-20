@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#0f2a44">
+<title>FotoReporte TPM</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{--azul:#0f2a44;--azul2:#1d4f7a;--amar:#facc15;--rojo:#dc2626;--gris:#f1f5f9;--borde:#cbd5e1;--txt:#0f172a}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Roboto,Arial,sans-serif;background:var(--gris);color:var(--txt);padding-bottom:70px}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:10px 14px;background:var(--azul2);color:#fff}
+button.sec{background:#fff;color:var(--azul);border:1px solid var(--borde)}
+button.warn{background:var(--rojo)}
+button.ok{background:#15803d}
+button.yel{background:var(--amar);color:#111}
+button:disabled{opacity:.4;cursor:default}
+input,select,textarea{font:inherit;width:100%;padding:9px 10px;border:1px solid var(--borde);border-radius:8px;background:#fff}
+textarea{resize:vertical;min-height:70px}
+label{font-size:13px;font-weight:600;color:#334155;display:block;margin-bottom:4px}
+.hidden{display:none!important}
+header.top{position:sticky;top:0;z-index:50;background:var(--azul);color:#fff;display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:4px solid var(--amar)}
+header.top button{background:transparent;font-size:24px;padding:4px 10px}
+.brand{flex:1;line-height:1.1}.brand small{display:block;opacity:.75;font-size:12px}
+#hdrFolio{font-weight:700;color:var(--amar)}
+.menu{position:fixed;top:60px;left:8px;z-index:60;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;min-width:260px;overflow:hidden}
+.menu button{background:#fff;color:var(--txt);text-align:left;border-radius:0;border-bottom:1px solid #e2e8f0;padding:14px 16px}
+.menu button:hover{background:#eef2f7}
+.steps{display:flex;gap:6px;padding:8px 12px;background:#fff;border-bottom:1px solid var(--borde);overflow-x:auto}
+.steps button{background:#e2e8f0;color:#334155;flex:1;white-space:nowrap;font-size:14px}
+.steps button.on{background:var(--amar);color:#111;font-weight:700}
+main{max-width:1250px;margin:0 auto;padding:14px}
+.card{background:#fff;border:1px solid var(--borde);border-radius:12px;padding:14px;margin-bottom:12px}
+h2{margin:4px 0 12px;font-size:20px;color:var(--azul)}
+h3{margin:4px 0 10px;font-size:16px;color:var(--azul)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.muted{color:#64748b;font-size:13px}
+.req::after{content:" *";color:var(--rojo)}
+.rec{display:flex;gap:12px;align-items:flex-start}
+.rec img,.rec .ph{width:96px;height:72px;object-fit:cover;border-radius:8px;background:#e2e8f0;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px}
+.rec .inf{flex:1;min-width:0}
+.rec .inf b{color:var(--azul)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:700}
+.b-Abierto{background:#fee2e2;color:#991b1b}.b-En{background:#fef9c3;color:#854d0e}.b-Cerrado{background:#dcfce7;color:#166534}
+.rec .acts button{padding:7px 10px;font-size:13px;margin:3px 3px 0 0}
+.banner{background:#fef9c3;border:1px solid #facc15;border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.fgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.fcard{background:#fff;border:1px solid var(--borde);border-radius:12px;overflow:hidden}
+.fcard img{width:100%;height:170px;object-fit:cover;display:block;cursor:pointer;background:#000}
+.fcard .fb{padding:8px}
+.fcard .fb .row button{padding:6px 9px;font-size:13px}
+.bigbtns{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.bigbtns button{padding:18px;font-size:17px}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px}
+.thumbs img{height:60px;width:80px;object-fit:cover;border-radius:6px;border:3px solid transparent;cursor:pointer}
+.thumbs img.on{border-color:var(--amar)}
+.edwrap{display:grid;grid-template-columns:1fr 330px;gap:12px}
+@media(max-width:900px){.edwrap{grid-template-columns:1fr}}
+.stagewrap{background:#1e293b;border-radius:12px;padding:10px;text-align:center}
+.stage{position:relative;display:inline-block;max-width:100%;user-select:none;-webkit-user-select:none;line-height:0}
+.stage.add{cursor:crosshair;outline:3px dashed var(--amar)}
+.stage img{display:block;max-width:100%;max-height:72vh;pointer-events:none}
+#boxLayer{position:absolute;inset:0}
+.box{position:absolute;border:2px solid;touch-action:none;cursor:move;line-height:1.2;text-align:left}
+.box.sel{outline:2px dashed #fff;outline-offset:2px;box-shadow:0 0 0 4px rgba(0,0,0,.45)}
+.box .num{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid #fff;font-family:Arial}
+.box .txt{width:100%;height:100%;overflow:hidden;white-space:pre-wrap;word-break:break-word;font-weight:700;font-family:Arial}
+.box.red .txt{text-shadow:0 0 3px rgba(0,0,0,.8)}
+.box .handle{position:absolute;right:-9px;bottom:-9px;width:22px;height:22px;background:#fff;border:3px solid var(--azul);border-radius:50%;cursor:nwse-resize;touch-action:none}
+.panel .card{margin-bottom:10px}
+.colorbtns{display:flex;gap:8px}
+.colorbtns button{flex:1;font-weight:700}
+.colorbtns .c-red{background:rgba(220,38,38,.85)}
+.colorbtns .c-yellow{background:rgba(250,204,21,.95);color:#111}
+.colorbtns button.on{outline:3px solid var(--azul);outline-offset:2px}
+.blist div{padding:8px;border:1px solid var(--borde);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:14px;display:flex;gap:8px;align-items:center}
+.blist div.on{border-color:var(--azul);background:#eef2f7}
+.dot{width:14px;height:14px;border-radius:3px;flex:none}
+.pages{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.pages img{width:100%;border:1px solid var(--borde);box-shadow:0 4px 14px rgba(0,0,0,.12);background:#fff}
+footer.nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--borde);display:flex;gap:10px;align-items:center;padding:8px 12px}
+footer.nav button{min-width:130px;padding:12px}
+#navInfo{flex:1;text-align:center;font-size:13px;color:#475569}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:8px;z-index:99;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center}
+#toast.show{opacity:.92}
+#busy{position:fixed;inset:0;background:rgba(15,42,68,.55);z-index:98;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700}
+#printArea{display:none}
+#modal{position:fixed;inset:0;background:rgba(15,42,68,.6);z-index:90;display:flex;align-items:center;justify-content:center;padding:12px}
+.mdBox{background:#fff;border-radius:12px;padding:16px;max-width:720px;width:100%;max-height:90vh;overflow:auto}
+.mdItem{display:flex;gap:12px;align-items:center;border:1px solid var(--borde);border-radius:10px;padding:8px;margin-bottom:8px}
+.mdItem img{width:110px;height:150px;object-fit:contain;background:#f1f5f9;border-radius:6px;flex:none}
+.mdPdf{width:110px;height:80px;display:flex;align-items:center;justify-content:center;background:#fee2e2;border-radius:6px;font-weight:700;flex:none}
+.mdInf{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;word-break:break-all}
+a.btnA{display:inline-block;text-decoration:none;padding:9px 14px;border-radius:8px;background:var(--azul2);color:#fff;font-weight:600}
+a.btnA.ok{background:#15803d}a.btnA.sec{background:#fff;color:var(--azul);border:1px solid var(--borde)}
+@media print{
+  @page{size:A4;margin:0}
+  body{padding:0;background:#fff}
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block!important}
+  #printArea img{display:block;width:210mm;height:297mm;page-break-after:always;break-after:page}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <button id="btnMenu" title="Menú">☰</button>
+  <div class="brand"><b>FotoReporte TPM</b><small>Registro fotográfico de hallazgos · Offline · <b style="color:#facc15">v4</b></small></div>
+  <div id="hdrFolio"></div>
+</header>
+
+<div id="frameBanner" class="hidden" style="background:#dc2626;color:#fff;padding:12px 14px;font-size:15px;line-height:1.4">
+  ⛔ <b>La app está abierta dentro de una VISTA PREVIA</b> (Copilot, OneDrive, Teams o correo). Ahí el navegador <b>bloquea</b> descargar, compartir, imprimir y guardar registros.<br>
+  ✅ <b>Solución:</b> descargue el archivo <b>FotoReporte_TPM_v4.html</b> a su equipo y ábralo con doble clic en <b>Edge o Chrome</b>.
+</div>
+<nav id="menu" class="menu hidden">
+  <button data-go="lista">📋 Registros</button>
+  <button data-act="nuevo">➕ Nuevo registro</button>
+  <button data-go="respaldo">💾 Respaldo · Exportar · Importar</button>
+  <button data-go="config">⚙️ Configuración</button>
+  <button data-go="ayuda">❓ Ayuda</button>
+  <button id="btnInstall" class="hidden">📲 Instalar aplicación</button>
+</nav>
+
+<div id="steps" class="steps hidden">
+  <button data-step="datos">1 · Datos</button>
+  <button data-step="fotos">2 · Fotos</button>
+  <button data-step="editor">3 · Anotar</button>
+  <button data-step="reporte">4 · Reporte</button>
+</div>
+
+<main>
+<section id="v-lista" class="view">
+  <div id="bkBanner" class="banner hidden"></div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">Registros</h2>
+      <button class="ok" data-act="nuevo">➕ Nuevo registro</button>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div><label>Buscar</label><input id="fBuscar" placeholder="Folio, área, equipo, descripción..."></div>
+      <div><label>Estado</label><select id="fEstado"><option value="">Todos</option><option>Abierto</option><option>En proceso</option><option>Cerrado</option></select></div>
+      <div><label>Tipo</label><select id="fTipo"><option value="">Todos</option></select></div>
+    </div>
+    <p class="muted" id="lstInfo"></p>
+  </div>
+  <div id="lst"></div>
+</section>
+
+<section id="v-datos" class="view hidden">
+  <div class="card">
+    <h2>1 · Datos generales del registro</h2>
+    <div class="grid">
+      <div><label>Folio</label><input data-f="folio"></div>
+      <div><label class="req">Fecha</label><input type="date" data-f="fecha"></div>
+      <div><label>Hora</label><input type="time" data-f="hora"></div>
+      <div><label class="req">Área</label><input data-f="area" list="dlAreas" placeholder="Ej. Hornos, Laminación..."></div>
+      <div><label>Equipo / Máquina</label><input data-f="equipo" placeholder="Ej. Compresor #3"></div>
+      <div><label>Ubicación / Punto</label><input data-f="ubicacion" placeholder="Ej. Lado motor, nivel 2"></div>
+      <div><label class="req">Tipo de hallazgo</label><select data-f="tipo" id="selTipo"></select></div>
+      <div><label>Prioridad</label><select data-f="prioridad"><option>Alta</option><option>Media</option><option>Baja</option></select></div>
+      <div><label>Estado</label><select data-f="estado"><option>Abierto</option><option>En proceso</option><option>Cerrado</option></select></div>
+      <div><label>Detectado por</label><input data-f="detecto"></div>
+      <div><label>Responsable de atención</label><input data-f="responsable"></div>
+      <div><label>Fecha compromiso</label><input type="date" data-f="fcompromiso"></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div><label>Descripción del hallazgo</label><textarea data-f="descripcion" rows="4"></textarea></div>
+      <div><label>Acción correctiva / propuesta</label><textarea data-f="accion" rows="4"></textarea></div>
+      <div><label>Observaciones</label><textarea data-f="obs" rows="4"></textarea></div>
+    </div>
+    <datalist id="dlAreas"></datalist>
+    <p class="muted">Los cambios se guardan automáticamente en el dispositivo.</p>
+  </div>
+</section>
+
+<section id="v-fotos" class="view hidden">
+  <div class="card">
+    <h2>2 · Fotografías</h2>
+    <div class="bigbtns">
+      <button class="ok" id="btnCam">📷 Tomar fotografía</button>
+      <button id="btnGal">🖼️ Cargar fotos (celular / tablet / PC)</button>
+    </div>
+    <p class="muted">En computadora también puede <b>pegar una imagen con Ctrl+V</b> o arrastrarla a esta pantalla.</p>
+  </div>
+  <div id="fgrid" class="fgrid"></div>
+</section>
+
+<section id="v-editor" class="view hidden">
+  <div class="card" style="padding:10px">
+    <div class="row" style="justify-content:space-between"><h2 style="margin:0">3 · Anotar sobre la imagen</h2><span class="muted" id="edInfo"></span></div>
+    <div id="thumbs" class="thumbs" style="margin-top:8px"></div>
+  </div>
+  <div id="edEmpty" class="card hidden">No hay fotos. Regrese al paso 2 para tomar o cargar fotografías.</div>
+  <div id="edMain" class="edwrap">
+    <div class="stagewrap"><div id="stage" class="stage"><img id="stageImg" alt=""><div id="boxLayer"></div></div></div>
+    <aside class="panel">
+      <div class="card">
+        <h3>Nuevo recuadro</h3>
+        <div class="colorbtns" id="defColor">
+          <button class="c-red on" data-c="red">ROJO</button>
+          <button class="c-yellow" data-c="yellow">AMARILLO</button>
+        </div>
+        <button id="btnAdd" class="yel" style="width:100%;margin-top:10px">➕ Agregar recuadro</button>
+        <p class="muted">Presione “Agregar recuadro” y toque la imagen en el punto deseado. Arrastre para mover; use el círculo blanco para cambiar tamaño.</p>
+      </div>
+      <div class="card" id="boxPanel">
+        <h3>Recuadro seleccionado <span id="bxNum"></span></h3>
+        <label>Texto / información del punto</label>
+        <textarea id="bxText" rows="4" placeholder="Ej. Fuga de aceite en sello lado acople"></textarea>
+        <label style="margin-top:8px">Color</label>
+        <div class="colorbtns" id="bxColor">
+          <button class="c-red" data-c="red">ROJO</button>
+          <button class="c-yellow" data-c="yellow">AMARILLO</button>
+        </div>
+        <label style="margin-top:8px">Tamaño de letra <span id="fsVal"></span></label>
+        <input type="range" id="bxFs" min="0.012" max="0.08" step="0.002">
+        <label>Transparencia del fondo <span id="opVal"></span></label>
+        <input type="range" id="bxOp" min="0.1" max="0.9" step="0.05">
+        <div class="row" style="margin-top:10px">
+          <button class="sec" id="bxDup">⧉ Duplicar</button>
+          <button class="warn" id="bxDel">🗑 Eliminar</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Recuadros en esta foto</h3>
+        <div id="blist" class="blist"></div>
+        <label style="margin-top:8px">Pie de foto</label>
+        <input id="edCaption" placeholder="Descripción breve de la fotografía">
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section id="v-reporte" class="view hidden">
+  <div class="card">
+    <h2>4 · Reporte</h2>
+    <div class="row">
+      <button class="ok" id="rpPdf">📄 Descargar PDF</button>
+      <button id="rpSharePdf">📤 Compartir PDF</button>
+      <button id="rpImg">🖼️ Descargar imagen(es) JPG</button>
+      <button id="rpShareImg">📤 Compartir imagen(es)</button>
+      <button class="sec" id="rpFotos">📸 Exportar fotos anotadas</button>
+      <button class="sec" id="rpPrint">🖨️ Imprimir</button>
+    </div>
+    <div id="rpWarn" class="banner hidden" style="margin-top:10px">⚠️ Está abriendo la app dentro de una <b>vista previa</b> (OneDrive, Teams o correo). Ahí el navegador bloquea descargar, compartir e imprimir. Descargue el archivo y ábralo con Edge o Chrome.</div>
+    <p id="rpState" class="muted" style="font-weight:600"></p>
+    <p class="muted">Vista previa tamaño A4. Para editar, regrese con ◀ Anterior o use los pasos superiores.</p>
+  </div>
+  <div id="pages" class="pages"></div>
+</section>
+
+<section id="v-respaldo" class="view hidden">
+  <div class="card">
+    <h2>Respaldo, exportación e importación</h2>
+    <p id="bkStats" class="muted"></p>
+    <div class="bigbtns">
+      <button class="ok" id="bkExport">💾 Exportar respaldo completo (.json)</button>
+      <button id="bkImport">📂 Importar respaldo (.json)</button>
+      <button class="sec" id="bkCsv">📊 Exportar lista a Excel (.csv)</button>
+    </div>
+    <div style="margin-top:12px;max-width:420px">
+      <label>Modo de importación</label>
+      <select id="bkMode"><option value="merge">Combinar (actualiza registros existentes y agrega nuevos)</option><option value="replace">Reemplazar todo</option></select>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Zona de riesgo</h3>
+    <button class="warn" id="bkWipe">Borrar todos los registros</button>
+  </div>
+</section>
+
+<section id="v-config" class="view hidden">
+  <div class="card">
+    <h2>Configuración</h2>
+    <div class="grid">
+      <div><label>Empresa</label><input id="cfEmpresa"></div>
+      <div><label>Planta / Departamento</label><input id="cfPlanta"></div>
+      <div><label>Título del reporte</label><input id="cfTitulo"></div>
+      <div><label>Prefijo de folio</label><input id="cfPrefijo"></div>
+      <div><label>Consecutivo actual</label><input type="number" id="cfContador" min="0"></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div><label>Tipos de hallazgo (uno por línea)</label><textarea id="cfTipos" rows="6"></textarea></div>
+      <div><label>Áreas frecuentes (una por línea)</label><textarea id="cfAreas" rows="6"></textarea></div>
+      <div>
+        <label>Logotipo para el reporte</label>
+        <img id="cfLogoPrev" style="max-height:80px;max-width:100%;display:block;margin-bottom:8px">
+        <div class="row"><button class="sec" id="cfLogoBtn">Cargar logotipo</button><button class="sec" id="cfLogoDel">Quitar</button></div>
+      </div>
+    </div>
+    <button class="ok" id="cfSave" style="margin-top:14px">Guardar configuración</button>
+  </div>
+</section>
+
+<section id="v-ayuda" class="view hidden">
+  <div class="card">
+    <h2>¿Cómo se usa?</h2>
+    <ol>
+      <li><b>Nuevo registro:</b> capture área, equipo, tipo de hallazgo, responsable y descripción.</li>
+      <li><b>Fotos:</b> tome la fotografía con la cámara o cárguela desde la galería / carpeta. Puede girarla y ordenarla.</li>
+      <li><b>Anotar:</b> elija ROJO o AMARILLO, presione <i>Agregar recuadro</i> y toque el punto de la imagen. Escriba la información en el panel. Arrastre para mover y use el círculo blanco para cambiar tamaño.</li>
+      <li><b>Reporte:</b> descargue PDF, imágenes JPG, compártalos (WhatsApp, correo, Teams) o imprima.</li>
+      <li><b>Respaldo:</b> exporte el archivo .json periódicamente. Con él puede pasar la información a otro equipo (Importar).</li>
+      <li><b>Instalar:</b> si abrió la app desde su dirección web, use el menú ☰ → <i>Instalar aplicación</i>, o el menú del navegador → <i>Instalar app / Agregar a pantalla de inicio</i>.</li>
+    </ol>
+    <p class="muted">Toda la información se guarda en este dispositivo, sin Internet. Si borra los datos del navegador o desinstala la app se pierden los registros: mantenga respaldos.</p>
+  </div>
+</section>
+</main>
+
+<footer class="nav">
+  <button class="sec" id="btnPrev">◀ Anterior</button>
+  <span id="navInfo"></span>
+  <button id="btnNext">Siguiente ▶</button>
+</footer>
+
+<input type="file" id="inCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="inGal" accept="image/*" multiple hidden>
+<input type="file" id="inJson" accept=".json,application/json" hidden>
+<input type="file" id="inLogo" accept="image/*" hidden>
+<div id="modal" class="hidden"><div class="mdBox">
+  <div class="row" style="justify-content:space-between"><h2 id="mdTitle" style="margin:0"></h2><button class="sec" id="mdClose">✖ Cerrar</button></div>
+  <p id="mdNote" class="muted"></p><button id="mdShare" class="hidden" style="margin-bottom:10px">📤 Compartir</button><div id="mdList"></div></div></div>
+<div id="printArea"></div>
+<div id="toast"></div>
+<div id="busy" class="hidden">Procesando…</div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const nowTime=()=>new Date().toTimeString().slice(0,5);
+const fmtDate=d=>{if(!d)return '';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeName=s=>String(s||'').replace(/[^\w\-áéíóúñÁÉÍÓÚÑ ]+/g,'').trim().replace(/\s+/g,'_').slice(0,60);
+function toast(m,t=2600){const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),t)}
+const busy=on=>$('#busy').classList.toggle('hidden',!on);
+const loadImg=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('No se pudo leer la imagen'));i.src=src});
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+const canvasBlob=(c,type='image/jpeg',q=.9)=>new Promise(r=>c.toBlob(r,type,q));
+const COL={red:{rgb:'220,38,38',txt:'#ffffff',name:'ROJO'},yellow:{rgb:'250,204,21',txt:'#111111',name:'AMARILLO'}};
+
+/* ===== Almacenamiento local (IndexedDB) ===== */
+let db=null; const mem={records:new Map(),kv:new Map()};
+function openDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open('FotoReporteTPM',1);
+  r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('records',{keyPath:'id'});d.createObjectStore('kv',{keyPath:'k'})};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
+function idb(store,mode,fn){return new Promise((res,rej)=>{const t=db.transaction(store,mode);const req=fn(t.objectStore(store));
+  t.oncomplete=()=>res(req&&req.result!==undefined?req.result:undefined);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})}
+const dbAll=async()=>db?await idb('records','readonly',s=>s.getAll()):[...mem.records.values()];
+const dbGet=async id=>db?await idb('records','readonly',s=>s.get(id)):mem.records.get(id);
+const dbPut=async r=>db?idb('records','readwrite',s=>s.put(r)):mem.records.set(r.id,structuredClone(r));
+const dbDel=async id=>db?idb('records','readwrite',s=>s.delete(id)):mem.records.delete(id);
+const dbClear=async()=>db?idb('records','readwrite',s=>s.clear()):mem.records.clear();
+const kvGet=async k=>{if(!db)return mem.kv.get(k);const o=await idb('kv','readonly',s=>s.get(k));return o?o.v:undefined};
+const kvSet=async(k,v)=>db?idb('kv','readwrite',s=>s.put({k,v})):mem.kv.set(k,v);
+
+/* ===== Estado ===== */
+const DEF={empresa:'',planta:'',titulo:'REPORTE FOTOGRÁFICO DE HALLAZGOS TPM',prefijo:'TPM',contador:0,logo:'',
+  tipos:'Tarjeta Roja - Mantenimiento\nTarjeta Amarilla - Operación / Seguridad\nCondición insegura\nFuga (aire / aceite / agua / gas)\nMejora / Kaizen\nInspección de rutina',
+  areas:'',lastBackup:null};
+let S={...DEF}, cur=null, view='lista', hist=[], recs=[];
+let ph=0, selBox=null, addMode=false, defColor='red', pages=null, saveT=null;
+const WIZ=['datos','fotos','editor','reporte'];
+
+function saveSoon(){clearTimeout(saveT);saveT=setTimeout(saveNow,400)}
+async function saveNow(){clearTimeout(saveT);if(!cur)return;cur.modificado=Date.now();pages=null;try{await dbPut(cur)}catch(e){toast('Error al guardar: '+e.message)}}
+const saveSettings=()=>kvSet('settings',S);
+
+/* ===== Navegación ===== */
+function go(v,push=true){
+  if(push&&view!==v&&!WIZ.includes(view)){hist.push(view);if(hist.length>20)hist.shift()}
+  if(cur)saveNow();
+  if(view==='editor'&&v!=='editor'){addMode=false}
+  view=v;
+  $$('.view').forEach(s=>s.classList.toggle('hidden',s.id!=='v-'+v));
+  $('#menu').classList.add('hidden');
+  ({lista:renderLista,datos:renderDatos,fotos:renderFotos,editor:renderEditor,reporte:renderReporte,respaldo:renderRespaldo,config:renderConfig}[v]||(()=>{}))();
+  updateNav();window.scrollTo(0,0);
+}
+function updateNav(){
+  const i=WIZ.indexOf(view), inW=i>=0&&cur;
+  $('#steps').classList.toggle('hidden',!inW);
+  $$('#steps button').forEach(b=>b.classList.toggle('on',b.dataset.step===view));
+  $('#hdrFolio').textContent=inW?cur.folio:'';
+  const P=$('#btnPrev'),N=$('#btnNext'),I=$('#navInfo');
+  if(inW){P.disabled=false;P.textContent=i===0?'◀ Registros':'◀ Anterior';N.textContent=i===3?'✔ Finalizar':'Siguiente ▶';I.textContent=`Paso ${i+1} de 4`}
+  else{P.disabled=view==='lista';P.textContent='◀ Regresar';N.textContent=view==='lista'?'➕ Nuevo':'Registros ▶';
+    I.textContent={lista:`${recs.length} registro(s)`,respaldo:'Respaldo',config:'Configuración',ayuda:'Ayuda'}[view]||''}
+}
+$('#btnPrev').onclick=()=>{const i=WIZ.indexOf(view);
+  if(i>0)go(WIZ[i-1]);else if(i===0){go('lista',false)}else go(hist.pop()||'lista',false)};
+$('#btnNext').onclick=()=>{const i=WIZ.indexOf(view);
+  if(i>=0&&i<3){if(i===0&&!validDatos())return;go(WIZ[i+1])}
+  else if(i===3){saveNow();toast('Registro guardado ✔');cur=null;go('lista',false)}
+  else if(view==='lista')newRecord();else go('lista',false)};
+$('#btnMenu').onclick=e=>{e.stopPropagation();$('#menu').classList.toggle('hidden')};
+document.addEventListener('click',e=>{if(!e.target.closest('#menu'))$('#menu').classList.add('hidden')});
+$$('[data-go]').forEach(b=>b.onclick=()=>{if(WIZ.includes(view))cur&&saveNow();go(b.dataset.go)});
+$$('[data-act="nuevo"]').forEach(b=>b.onclick=()=>newRecord());
+$$('#steps button').forEach(b=>b.onclick=()=>{if(view==='datos'&&b.dataset.step!=='datos'&&!validDatos())return;go(b.dataset.step)});
+
+function validDatos(){const f=[];if(!cur.fecha)f.push('Fecha');if(!cur.area)f.push('Área');if(!cur.tipo)f.push('Tipo');
+  if(f.length){toast('Complete: '+f.join(', '));return false}return true}
+
+/* ===== Registros ===== */
+const tiposList=()=>S.tipos.split('\n').map(s=>s.trim()).filter(Boolean);
+function nextFolio(){S.contador=(+S.contador||0)+1;saveSettings();return `${S.prefijo||'REG'}-${new Date().getFullYear()}-${String(S.contador).padStart(4,'0')}`}
+async function newRecord(){
+  cur={id:uid(),folio:nextFolio(),fecha:today(),hora:nowTime(),area:'',equipo:'',ubicacion:'',tipo:tiposList()[0]||'',prioridad:'Media',estado:'Abierto',
+    detecto:'',responsable:'',fcompromiso:'',descripcion:'',accion:'',obs:'',fotos:[],creado:Date.now(),modificado:Date.now()};
+  await dbPut(cur);ph=0;go('datos');
+}
+async function openRecord(id,v='datos'){cur=await dbGet(id);if(!cur)return toast('No encontrado');ph=0;selBox=null;pages=null;go(v)}
+
+async function renderLista(){
+  recs=(await dbAll()).sort((a,b)=>(b.fecha+b.hora).localeCompare(a.fecha+a.hora)||b.creado-a.creado);
+  const ft=$('#fTipo'),cv=ft.value;const tipos=[...new Set([...tiposList(),...recs.map(r=>r.tipo).filter(Boolean)])];
+  ft.innerHTML='<option value="">Todos</option>'+tipos.map(t=>`<option>${esc(t)}</option>`).join('');ft.value=cv;
+  const q=$('#fBuscar').value.toLowerCase().trim(),fe=$('#fEstado').value,fti=ft.value;
+  const L=recs.filter(r=>(!fe||r.estado===fe)&&(!fti||r.tipo===fti)&&(!q||[r.folio,r.area,r.equipo,r.ubicacion,r.descripcion,r.responsable,r.tipo].join(' ').toLowerCase().includes(q)));
+  $('#lstInfo').textContent=`Mostrando ${L.length} de ${recs.length} registro(s).`;
+  $('#lst').innerHTML=L.length?L.map(r=>{const nb=r.fotos.reduce((a,f)=>a+f.boxes.length,0);
+    return `<div class="card rec">${r.fotos[0]?`<img src="${r.fotos[0].data}" alt="">`:'<div class="ph">📷</div>'}
+    <div class="inf"><b>${esc(r.folio)}</b> <span class="badge b-${esc((r.estado||'').split(' ')[0])}">${esc(r.estado)}</span>
+    <div>${esc(r.area||'(sin área)')}${r.equipo?' · '+esc(r.equipo):''}</div>
+    <div class="muted">${fmtDate(r.fecha)} ${esc(r.hora||'')} · ${esc(r.tipo)} · Prioridad ${esc(r.prioridad)} · ${r.fotos.length} foto(s) · ${nb} recuadro(s)</div>
+    <div class="acts"><button data-o="${r.id}">✏️ Abrir</button><button class="ok" data-r="${r.id}">📄 Reporte</button><button class="sec" data-d="${r.id}">⧉ Duplicar</button><button class="sec" data-b="${r.id}">💾 Exportar</button><button class="warn" data-x="${r.id}">🗑</button></div></div></div>`}).join('')
+    :'<div class="card muted">No hay registros. Presione “➕ Nuevo registro”.</div>';
+  $$('#lst [data-o]').forEach(b=>b.onclick=()=>openRecord(b.dataset.o,'datos'));
+  $$('#lst [data-r]').forEach(b=>b.onclick=()=>openRecord(b.dataset.r,'reporte'));
+  $$('#lst [data-d]').forEach(b=>b.onclick=async()=>{const r=structuredClone(await dbGet(b.dataset.d));r.id=uid();r.folio=nextFolio();r.creado=r.modificado=Date.now();r.estado='Abierto';await dbPut(r);toast('Duplicado como '+r.folio);renderLista()});
+  $$('#lst [data-b]').forEach(b=>b.onclick=async()=>{const r=await dbGet(b.dataset.b);exportJSON([r],`Registro_${safeName(r.folio)}.json`,false)});
+  $$('#lst [data-x]').forEach(b=>b.onclick=async()=>{const r=recs.find(x=>x.id===b.dataset.x);if(confirm(`¿Eliminar el registro ${r.folio}? Esta acción no se puede deshacer.`)){await dbDel(r.id);toast('Eliminado');renderLista()}});
+  const bn=$('#bkBanner'),days=S.lastBackup?(Date.now()-S.lastBackup)/864e5:999;
+  if(!db){bn.innerHTML='⚠️ Este navegador no permite guardar datos permanentemente en este modo. Exporte un respaldo antes de cerrar.';bn.classList.remove('hidden')}
+  else if(recs.length&&days>7){bn.innerHTML=`💾 ${S.lastBackup?'Último respaldo hace '+Math.floor(days)+' días.':'Aún no ha hecho respaldo.'} <button class="ok" id="bnBk" style="padding:6px 10px;margin-left:8px">Respaldar ahora</button>`;bn.classList.remove('hidden');$('#bnBk').onclick=()=>exportAll()}
+  else bn.classList.add('hidden');
+  updateNav();
+}
+['input','change'].forEach(ev=>{$('#fBuscar').addEventListener(ev,renderLista);$('#fEstado').addEventListener(ev,renderLista);$('#fTipo').addEventListener(ev,renderLista)});
+
+/* ===== Datos ===== */
+function renderDatos(){
+  const tipos=tiposList();if(cur.tipo&&!tipos.includes(cur.tipo))tipos.push(cur.tipo);
+  $('#selTipo').innerHTML=tipos.map(t=>`<option>${esc(t)}</option>`).join('');
+  const areas=[...new Set([...S.areas.split('\n').map(s=>s.trim()),...recs.map(r=>r.area)].filter(Boolean))];
+  $('#dlAreas').innerHTML=areas.map(a=>`<option value="${esc(a)}">`).join('');
+  $$('#v-datos [data-f]').forEach(el=>el.value=cur[el.dataset.f]??'');
+}
+$$('#v-datos [data-f]').forEach(el=>{const h=()=>{if(!cur)return;cur[el.dataset.f]=el.value;if(el.dataset.f==='folio')updateNav();saveSoon()};el.addEventListener('input',h);el.addEventListener('change',h)});
+
+/* ===== Fotos ===== */
+async function fileToPhoto(file){
+  const url=URL.createObjectURL(file);
+  try{const img=await loadImg(url);const M=1920;let w=img.naturalWidth,h=img.naturalHeight;const k=Math.min(1,M/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
+    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+    return {id:uid(),data:c.toDataURL('image/jpeg',.85),w,h,caption:'',boxes:[]};}
+  finally{URL.revokeObjectURL(url)}
+}
+async function addFiles(files){
+  if(!cur)return;files=[...files].filter(f=>f.type.startsWith('image/')||/\.(jpe?g|png|webp|bmp|gif)$/i.test(f.name));if(!files.length)return;
+  busy(true);let ok=0;
+  for(const f of files){try{cur.fotos.push(await fileToPhoto(f));ok++}catch(e){toast(`No se pudo abrir ${f.name} (use JPG/PNG)`)}}
+  busy(false);await saveNow();toast(`${ok} foto(s) agregada(s)`);
+  if(view==='fotos')renderFotos();else if(view==='editor'){ph=cur.fotos.length-1;renderEditor()}
+}
+$('#btnCam').onclick=()=>$('#inCam').click();
+$('#btnGal').onclick=()=>$('#inGal').click();
+$('#inCam').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+$('#inGal').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+document.addEventListener('paste',e=>{if(!cur||!['fotos','editor'].includes(view))return;const fs=[...(e.clipboardData?.items||[])].filter(i=>i.type.startsWith('image/')).map(i=>i.getAsFile());if(fs.length){e.preventDefault();addFiles(fs)}});
+document.addEventListener('dragover',e=>{if(view==='fotos')e.preventDefault()});
+document.addEventListener('drop',e=>{if(view==='fotos'){e.preventDefault();addFiles(e.dataTransfer.files)}});
+
+function rotatePhoto(f){return loadImg(f.data).then(img=>{const c=document.createElement('canvas');c.width=img.naturalHeight;c.height=img.naturalWidth;const x=c.getContext('2d');
+  x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(img,0,0);f.data=c.toDataURL('image/jpeg',.88);[f.w,f.h]=[c.width,c.height];
+  f.boxes.forEach(b=>{const o={...b};b.x=1-o.y-o.h;b.y=o.x;b.w=o.h;b.h=o.w})})}
+
+function renderFotos(){
+  const g=$('#fgrid');
+  if(!cur.fotos.length){g.innerHTML='<div class="card muted">Aún no hay fotografías en este registro.</div>';return}
+  g.innerHTML=cur.fotos.map((f,i)=>`<div class="fcard"><img src="${f.data}" data-e="${i}" title="Anotar">
+   <div class="fb"><b>Foto ${i+1}</b> <span class="muted">· ${f.boxes.length} recuadro(s)</span>
+   <input data-cap="${i}" placeholder="Pie de foto" value="${esc(f.caption)}" style="margin:6px 0">
+   <div class="row"><button data-e="${i}">✏️ Anotar</button><button class="sec" data-rot="${i}" title="Girar 90°">⟳</button>
+   <button class="sec" data-up="${i}" ${i===0?'disabled':''}>▲</button><button class="sec" data-dn="${i}" ${i===cur.fotos.length-1?'disabled':''}>▼</button>
+   <button class="warn" data-del="${i}">🗑</button></div></div></div>`).join('');
+  $$('#fgrid [data-e]').forEach(b=>b.onclick=()=>{ph=+b.dataset.e;selBox=null;go('editor')});
+  $$('#fgrid [data-cap]').forEach(b=>b.oninput=()=>{cur.fotos[+b.dataset.cap].caption=b.value;saveSoon()});
+  $$('#fgrid [data-rot]').forEach(b=>b.onclick=async()=>{busy(true);await rotatePhoto(cur.fotos[+b.dataset.rot]);busy(false);await saveNow();renderFotos()});
+  const mv=(i,d)=>{const a=cur.fotos;[a[i],a[i+d]]=[a[i+d],a[i]];saveNow();renderFotos()};
+  $$('#fgrid [data-up]').forEach(b=>b.onclick=()=>mv(+b.dataset.up,-1));
+  $$('#fgrid [data-dn]').forEach(b=>b.onclick=()=>mv(+b.dataset.dn,1));
+  $$('#fgrid [data-del]').forEach(b=>b.onclick=()=>{if(confirm('¿Eliminar esta foto y sus recuadros?')){cur.fotos.splice(+b.dataset.del,1);saveNow();renderFotos()}});
+}
+
+/* ===== Editor de recuadros ===== */
+const stage=$('#stage'),layer=$('#boxLayer'),sImg=$('#stageImg');
+const foto=()=>cur&&cur.fotos[ph];
+const boxById=id=>foto()?.boxes.find(b=>b.id===id);
+function renderEditor(){
+  const has=cur.fotos.length>0;$('#edEmpty').classList.toggle('hidden',has);$('#edMain').classList.toggle('hidden',!has);
+  $('#thumbs').innerHTML=cur.fotos.map((f,i)=>`<img src="${f.data}" data-i="${i}" class="${i===ph?'on':''}" title="Foto ${i+1}">`).join('')+(has?'<button class="sec" id="edAddPh" style="flex:none">+ Foto</button>':'');
+  $$('#thumbs img').forEach(t=>t.onclick=()=>{ph=+t.dataset.i;selBox=null;renderEditor()});
+  $('#edAddPh')&&($('#edAddPh').onclick=()=>$('#inGal').click());
+  if(!has)return;
+  ph=clamp(ph,0,cur.fotos.length-1);const f=foto();
+  $('#edInfo').textContent=`Foto ${ph+1} de ${cur.fotos.length}`;$('#edCaption').value=f.caption||'';
+  if(sImg.getAttribute('src')!==f.data){sImg.onload=()=>renderBoxes();sImg.src=f.data}else renderBoxes();
+  setAddMode(addMode);
+}
+function setAddMode(on){addMode=on;stage.classList.toggle('add',on);$('#btnAdd').textContent=on?'👆 Toque la imagen… (cancelar)':'➕ Agregar recuadro'}
+$('#btnAdd').onclick=()=>setAddMode(!addMode);
+$$('#defColor button').forEach(b=>b.onclick=()=>{defColor=b.dataset.c;$$('#defColor button').forEach(x=>x.classList.toggle('on',x===b))});
+$('#edCaption').oninput=e=>{foto().caption=e.target.value;saveSoon()};
+
+function boxStyle(el,b,i){
+  const W=stage.clientWidth||1,c=COL[b.color],r=Math.max(9,W*.018),pad=b.fs*W*.4;
+  Object.assign(el.style,{left:b.x*100+'%',top:b.y*100+'%',width:b.w*100+'%',height:b.h*100+'%',background:`rgba(${c.rgb},${b.op})`,borderColor:`rgb(${c.rgb})`,color:c.txt,fontSize:b.fs*W+'px'});
+  el.className='box '+b.color+(b.id===selBox?' sel':'');
+  const n=el.querySelector('.num');Object.assign(n.style,{width:2*r+'px',height:2*r+'px',left:-r+'px',top:-r+'px',fontSize:r*1.1+'px',background:`rgb(${c.rgb})`,color:c.txt});n.textContent=i+1;
+  const t=el.querySelector('.txt');t.style.padding=`${Math.max(pad,r*.9)}px ${pad}px ${pad}px ${pad}px`;t.textContent=b.text;
+}
+function renderBoxes(){
+  const f=foto();if(!f)return;layer.innerHTML='';
+  f.boxes.forEach((b,i)=>{const el=document.createElement('div');el.dataset.id=b.id;el.innerHTML='<span class="num"></span><div class="txt"></div>'+(b.id===selBox?'<div class="handle"></div>':'');
+    boxStyle(el,b,i);layer.appendChild(el);
+    el.addEventListener('pointerdown',e=>startDrag(e,b,e.target.classList.contains('handle')?'size':'move'));
+    el.addEventListener('dblclick',()=>$('#bxText').focus());});
+  renderPanel();
+}
+function updBox(b){const el=layer.querySelector(`[data-id="${b.id}"]`);if(el)boxStyle(el,b,foto().boxes.indexOf(b))}
+function select(id){selBox=id;renderBoxes()}
+function renderPanel(){
+  const f=foto(),b=boxById(selBox);$('#boxPanel').classList.toggle('hidden',!b);
+  $('#blist').innerHTML=f.boxes.length?f.boxes.map((x,i)=>`<div data-id="${x.id}" class="${x.id===selBox?'on':''}"><span class="dot" style="background:rgb(${COL[x.color].rgb})"></span><b>${i+1}.</b> ${esc(x.text||'(sin texto)').slice(0,60)}</div>`).join(''):'<span class="muted">Sin recuadros.</span>';
+  $$('#blist [data-id]').forEach(d=>d.onclick=()=>select(d.dataset.id));
+  if(!b)return;
+  $('#bxNum').textContent='#'+(f.boxes.indexOf(b)+1);
+  if(document.activeElement!==$('#bxText'))$('#bxText').value=b.text;
+  $$('#bxColor button').forEach(x=>x.classList.toggle('on',x.dataset.c===b.color));
+  $('#bxFs').value=b.fs;$('#fsVal').textContent=Math.round(b.fs*1000)/10;
+  $('#bxOp').value=b.op;$('#opVal').textContent=Math.round(b.op*100)+'%';
+}
+stage.addEventListener('pointerdown',e=>{
+  if(e.target.closest('.box'))return;
+  if(!addMode){if(selBox)select(null);return}
+  const r=stage.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+  const ar=r.width/r.height,w=.32,h=Math.min(.5,.16*ar);
+  const b={id:uid(),x:clamp(px-w/2,0,1-w),y:clamp(py-h/2,0,1-h),w,h,color:defColor,text:'',fs:.028,op:.35};
+  foto().boxes.push(b);setAddMode(false);select(b.id);saveSoon();setTimeout(()=>$('#bxText').focus(),50);
+});
+function startDrag(e,b,mode){
+  e.preventDefault();e.stopPropagation();if(selBox!==b.id)select(b.id);
+  const r=stage.getBoundingClientRect(),sx=e.clientX,sy=e.clientY,o={...b};
+  const mv=ev=>{const dx=(ev.clientX-sx)/r.width,dy=(ev.clientY-sy)/r.height;
+    if(mode==='move'){b.x=clamp(o.x+dx,0,1-b.w);b.y=clamp(o.y+dy,0,1-b.h)}else{b.w=clamp(o.w+dx,.03,1-b.x);b.h=clamp(o.h+dy,.03,1-b.y)}updBox(b)};
+  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);saveSoon()};
+  addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',up);
+}
+$('#bxText').oninput=e=>{const b=boxById(selBox);if(!b)return;b.text=e.target.value;updBox(b);saveSoon();
+  const d=$(`#blist [data-id="${b.id}"]`);if(d)d.innerHTML=`<span class="dot" style="background:rgb(${COL[b.color].rgb})"></span><b>${foto().boxes.indexOf(b)+1}.</b> ${esc(b.text||'(sin texto)').slice(0,60)}`};
+$$('#bxColor button').forEach(x=>x.onclick=()=>{const b=boxById(selBox);if(!b)return;b.color=x.dataset.c;saveSoon();renderBoxes()});
+$('#bxFs').oninput=e=>{const b=boxById(selBox);if(!b)return;b.fs=+e.target.value;$('#fsVal').textContent=Math.round(b.fs*1000)/10;updBox(b);saveSoon()};
+$('#bxOp').oninput=e=>{const b=boxById(selBox);if(!b)return;b.op=+e.target.value;$('#opVal').textContent=Math.round(b.op*100)+'%';updBox(b);saveSoon()};
+$('#bxDup').onclick=()=>{const b=boxById(selBox);if(!b)return;const n={...b,id:uid(),x:clamp(b.x+.04,0,1-b.w),y:clamp(b.y+.04,0,1-b.h)};foto().boxes.push(n);select(n.id);saveSoon()};
+$('#bxDel').onclick=()=>{const f=foto();f.boxes=f.boxes.filter(b=>b.id!==selBox);selBox=null;renderBoxes();saveSoon()};
+document.addEventListener('keydown',e=>{if(view!=='editor'||!selBox)return;const tag=document.activeElement?.tagName;if(['INPUT','TEXTAREA','SELECT'].includes(tag))return;
+  if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();$('#bxDel').click()}
+  const b=boxById(selBox),s=e.shiftKey?.02:.004;if(!b)return;const k={ArrowLeft:[-s,0],ArrowRight:[s,0],ArrowUp:[0,-s],ArrowDown:[0,s]}[e.key];
+  if(k){e.preventDefault();b.x=clamp(b.x+k[0],0,1-b.w);b.y=clamp(b.y+k[1],0,1-b.h);updBox(b);saveSoon()}});
+addEventListener('resize',()=>{if(view==='editor'&&foto())renderBoxes()});
+
+/* ===== Imagen anotada ===== */
+function wrap(x,text,px,py,maxW,lh,draw=true){
+  for(const para of String(text||'').split('\n')){let line='';
+    for(const w of para.split(' ')){const t=line?line+' '+w:w;if(x.measureText(t).width>maxW&&line){if(draw)x.fillText(line,px,py);py+=lh;line=w}else line=t}
+    if(draw)x.fillText(line,px,py);py+=lh}
+  return py;
+}
+async function renderAnnotated(f){
+  const img=await loadImg(f.data),c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+  const x=c.getContext('2d'),W=c.width,H=c.height;x.drawImage(img,0,0);
+  f.boxes.forEach((b,i)=>{const col=COL[b.color],bx=b.x*W,by=b.y*H,bw=b.w*W,bh=b.h*H,r=Math.max(12,W*.018),fs=b.fs*W,pad=fs*.4;
+    x.fillStyle=`rgba(${col.rgb},${b.op})`;x.fillRect(bx,by,bw,bh);
+    x.lineWidth=Math.max(2,W*.003);x.strokeStyle=`rgb(${col.rgb})`;x.strokeRect(bx,by,bw,bh);
+    x.save();x.beginPath();x.rect(bx,by,bw,bh);x.clip();
+    x.font=`bold ${fs}px Arial`;x.textAlign='left';x.textBaseline='top';x.fillStyle=col.txt;
+    if(b.color==='red'){x.shadowColor='rgba(0,0,0,.8)';x.shadowBlur=Math.max(2,fs*.15)}
+    wrap(x,b.text,bx+pad,by+Math.max(pad,r*.9),bw-2*pad,fs*1.2);x.restore();
+    x.beginPath();x.arc(bx,by,r,0,Math.PI*2);x.fillStyle=`rgb(${col.rgb})`;x.fill();x.lineWidth=Math.max(2,W*.002);x.strokeStyle='#fff';x.stroke();
+    x.fillStyle=col.txt;x.font=`bold ${r*1.1}px Arial`;x.textAlign='center';x.textBaseline='middle';x.fillText(String(i+1),bx,by+1);
+  });
+  return c;
+}
+
+/* ===== Reporte ===== */
+async function buildPages(rec){
+  const PW=1240,PH=1754,M=60,BOT=PH-80,out=[];let c,x,y;
+  const logo=S.logo?await loadImg(S.logo).catch(()=>null):null;
+  function newPage(){
+    c=document.createElement('canvas');c.width=PW;c.height=PH;x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,PW,PH);
+    x.fillStyle='#0f2a44';x.fillRect(0,0,PW,130);x.fillStyle='#facc15';x.fillRect(0,130,PW,8);
+    let tx=M;if(logo){const h=90,w=Math.min(220,logo.naturalWidth*h/logo.naturalHeight);x.fillStyle='#fff';x.fillRect(M-6,14,w+12,h+12);x.drawImage(logo,M,20,w,h);tx=M+w+24}
+    x.textBaseline='top';x.textAlign='left';x.fillStyle='#fff';x.font='bold 32px Arial';x.fillText(S.titulo||'REPORTE',tx,30,PW-tx-330);
+    x.font='22px Arial';x.fillText([S.empresa,S.planta].filter(Boolean).join(' · '),tx,78,PW-tx-330);
+    x.textAlign='right';x.fillStyle='#facc15';x.font='bold 30px Arial';x.fillText(rec.folio,PW-M,30);
+    x.fillStyle='#fff';x.font='20px Arial';x.fillText(`Fecha: ${fmtDate(rec.fecha)} ${rec.hora||''}`,PW-M,78);x.textAlign='left';
+    out.push(c);y=165;
+  }
+  newPage();
+  const F=[['Área',rec.area],['Equipo / Máquina',rec.equipo],['Ubicación / Punto',rec.ubicacion],['Tipo de hallazgo',rec.tipo],['Prioridad',rec.prioridad],['Estado',rec.estado],
+    ['Detectado por',rec.detecto],['Responsable',rec.responsable],['Fecha compromiso',fmtDate(rec.fcompromiso)]];
+  const cw=(PW-2*M)/3,rh=72;
+  F.forEach((f,i)=>{const cx=M+(i%3)*cw,cy=y+Math.floor(i/3)*rh;x.strokeStyle='#cbd5e1';x.lineWidth=2;x.strokeRect(cx,cy,cw,rh);
+    if(f[0]==='Estado'||f[0]==='Prioridad'){const v=f[1];x.fillStyle={Abierto:'#fee2e2','En proceso':'#fef9c3',Cerrado:'#dcfce7',Alta:'#fee2e2',Media:'#fef9c3',Baja:'#dcfce7'}[v]||'#fff';x.fillRect(cx+1,cy+1,cw-2,rh-2)}
+    x.fillStyle='#64748b';x.font='bold 16px Arial';x.fillText(f[0].toUpperCase(),cx+12,cy+10);
+    x.fillStyle='#0f172a';x.font='22px Arial';x.fillText(f[1]||'—',cx+12,cy+36,cw-24)});
+  y+=Math.ceil(F.length/3)*rh+24;
+  for(const [t,v] of [['Descripción del hallazgo',rec.descripcion],['Acción correctiva / propuesta',rec.accion],['Observaciones',rec.obs]]){
+    if(!v)continue;if(y>BOT-120)newPage();
+    x.fillStyle='#0f2a44';x.font='bold 22px Arial';x.fillText(t,M,y);y+=32;x.fillStyle='#1e293b';x.font='20px Arial';y=wrap(x,v,M,y,PW-2*M,28)+14}
+  const n=rec.fotos.length;
+  for(let i=0;i<n;i++){
+    const f=rec.fotos[i],ac=await renderAnnotated(f);
+    x.font='19px Arial';let legH=0;f.boxes.forEach((b,k)=>{legH=wrap(x,`${k+1}. ${b.text||'(sin texto)'}`,0,legH,PW-2*M-40,26,false)});if(f.boxes.length)legH+=34;
+    const capH=f.caption?34:0,head=40,minImg=380;
+    if(y+head+minImg+legH+capH>BOT&&y>200)newPage();
+    const avail=Math.min(900,BOT-y-head-legH-capH-10);
+    const sc=Math.min((PW-2*M)/ac.width,Math.max(200,avail)/ac.height),w=ac.width*sc,h=ac.height*sc;
+    x.fillStyle='#0f2a44';x.fillRect(M,y,PW-2*M,34);x.fillStyle='#fff';x.font='bold 20px Arial';x.fillText(`FOTOGRAFÍA ${i+1} DE ${n}`,M+12,y+7);y+=head;
+    const ix=(PW-w)/2;x.drawImage(ac,ix,y,w,h);x.strokeStyle='#94a3b8';x.lineWidth=2;x.strokeRect(ix,y,w,h);y+=h+10;
+    if(f.caption){x.fillStyle='#334155';x.font='italic 20px Arial';x.textAlign='center';x.fillText(f.caption,PW/2,y,PW-2*M);x.textAlign='left';y+=capH}
+    if(f.boxes.length){x.fillStyle='#0f2a44';x.font='bold 19px Arial';x.fillText('Puntos señalados:',M,y);y+=30;x.font='19px Arial';
+      f.boxes.forEach((b,k)=>{x.fillStyle=`rgb(${COL[b.color].rgb})`;x.fillRect(M,y+2,22,20);x.strokeStyle='#475569';x.lineWidth=1;x.strokeRect(M,y+2,22,20);
+        x.fillStyle='#0f172a';y=wrap(x,`${k+1}. ${b.text||'(sin texto)'}`,M+34,y,PW-2*M-40,26)})}
+    y+=22;
+  }
+  if(y+170>BOT)newPage();
+  y=Math.max(y+30,BOT-150);const sw=(PW-2*M-80)/3;
+  [['Elaboró / Detectó',rec.detecto],['Responsable',rec.responsable],['Vo. Bo.','']].forEach((s,i)=>{const sx=M+i*(sw+40);x.strokeStyle='#0f172a';x.lineWidth=2;
+    x.beginPath();x.moveTo(sx,y+70);x.lineTo(sx+sw,y+70);x.stroke();x.fillStyle='#0f172a';x.font='20px Arial';x.textAlign='center';x.fillText(s[1]||'',sx+sw/2,y+40,sw);
+    x.font='bold 17px Arial';x.fillText(s[0],sx+sw/2,y+80);x.textAlign='left'});
+  const gen=new Date().toLocaleString('es-MX');
+  out.forEach((p,i)=>{const g=p.getContext('2d');g.fillStyle='#e2e8f0';g.fillRect(0,PH-50,PW,50);g.fillStyle='#475569';g.font='16px Arial';g.textBaseline='middle';
+    g.textAlign='left';g.fillText(`${rec.folio} · Generado ${gen} · FotoReporte TPM`,M,PH-25);g.textAlign='right';g.fillText(`Página ${i+1} de ${out.length}`,PW-M,PH-25)});
+  return out;
+}
+/* ===== PDF nativo ===== */
+function makePDF(imgs){
+  const enc=new TextEncoder(),parts=[],off=[];let len=0;const add=d=>{const b=typeof d==='string'?enc.encode(d):d;parts.push(b);len+=b.length};
+  add('%PDF-1.4\n%\u00e2\u00e3\u00cf\u00d3\n');const n=imgs.length,total=2+n*3,PWp=595.28,PHp=841.89;
+  off[1]=len;add('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  off[2]=len;add(`2 0 obj\n<< /Type /Pages /Kids [${imgs.map((_,i)=>(3+i*3)+' 0 R').join(' ')}] /Count ${n} >>\nendobj\n`);
+  imgs.forEach((im,i)=>{const p=3+i*3,c=p+1,m=p+2,cs=`q ${PWp} 0 0 ${PHp} 0 0 cm /Im${i} Do Q`;
+    off[p]=len;add(`${p} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PWp} ${PHp}] /Resources << /XObject << /Im${i} ${m} 0 R >> >> /Contents ${c} 0 R >>\nendobj\n`);
+    off[c]=len;add(`${c} 0 obj\n<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
+    off[m]=len;add(`${m} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`);add(im.bytes);add('\nendstream\nendobj\n')});
+  const xr=len;let s=`xref\n0 ${total+1}\n0000000000 65535 f \n`;for(let k=1;k<=total;k++)s+=String(off[k]).padStart(10,'0')+' 00000 n \n';
+  add(s+`trailer\n<< /Size ${total+1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF\n`);
+  return new Blob(parts,{type:'application/pdf'});
+}
+let files=null;
+async function getPages(){if(!pages){busy(true);try{pages=await buildPages(cur)}finally{busy(false)}}return pages}
+async function getFiles(){
+  const P=await getPages();if(files&&files.pages===P)return files;
+  busy(true);try{const jpgs=[],imgs=[];
+    for(let i=0;i<P.length;i++){const b=await canvasBlob(P[i],'image/jpeg',.9);jpgs.push(new File([b],`${baseName()}_p${i+1}.jpg`,{type:'image/jpeg'}));
+      imgs.push({bytes:new Uint8Array(await b.arrayBuffer()),w:P[i].width,h:P[i].height})}
+    files={pages:P,jpgs,pdf:new File([makePDF(imgs)],baseName()+'.pdf',{type:'application/pdf'})};
+  }finally{busy(false)}return files}
+const RPB=['#rpPdf','#rpSharePdf','#rpImg','#rpShareImg','#rpFotos','#rpPrint'];
+async function renderReporte(){
+  $('#rpWarn').classList.toggle('hidden',!inFrame);
+  RPB.forEach(i=>$(i).disabled=true);$('#rpState').textContent='⏳ Preparando archivos…';
+  $('#pages').innerHTML='<div class="muted">Generando vista previa…</div>';
+  const F=await getFiles();$('#pages').innerHTML='';
+  F.jpgs.forEach(f=>{const i=new Image();i.src=URL.createObjectURL(f);$('#pages').appendChild(i)});
+  RPB.forEach(i=>$(i).disabled=false);$('#rpState').textContent=`✔ Listo: PDF de ${F.jpgs.length} página(s) · ${(F.pdf.size/1048576).toFixed(1)} MB`;
+}
+async function pdfBlob(){return (await getFiles()).pdf}
+const baseName=()=>safeName(`${cur.folio}_${cur.area}`)||'reporte';
+/* Compartir: se llama sin esperas previas para no perder el permiso del toque */
+async function share(fs,title){
+  if(!navigator.share||!navigator.canShare)return false;
+  try{if(!navigator.canShare({files:fs}))return false;await navigator.share({files:fs,title});return true}
+  catch(e){if(e.name==='AbortError')return true;console.warn(e);return false}}
+/* Ventana con enlaces directos (respaldo cuando el navegador bloquea) */
+let mdUrls=[];
+function showFiles(fs,title,note){
+  mdUrls.forEach(u=>URL.revokeObjectURL(u));mdUrls=[];
+  $('#mdTitle').textContent=title;$('#mdNote').innerHTML=note||'';
+  $('#mdList').innerHTML='';
+  fs.forEach(f=>{const u=URL.createObjectURL(f);mdUrls.push(u);const d=document.createElement('div');d.className='mdItem';
+    const isImg=f.type.startsWith('image/');
+    d.innerHTML=(isImg?`<img src="${u}" alt="">`:'<div class="mdPdf">📄 PDF</div>')+
+      `<div class="mdInf"><b>${esc(f.name)}</b><span class="muted">${(f.size/1024).toFixed(0)} KB</span>
+      <div class="row"><a class="btnA ok" href="${u}" download="${esc(f.name)}">⬇ Descargar</a><a class="btnA sec" href="${u}" target="_blank" rel="noopener">↗ Abrir</a></div></div>`;
+    $('#mdList').appendChild(d)});
+  $('#mdShare').classList.toggle('hidden',!(navigator.canShare&&(()=>{try{return navigator.canShare({files:fs})}catch(e){return false}})()));
+  $('#mdShare').onclick=()=>share(fs,cur.folio);
+  $('#modal').classList.remove('hidden');
+}
+$('#mdClose').onclick=()=>$('#modal').classList.add('hidden');
+const HELP='Si “Descargar” no hace nada: en <b>celular</b> mantenga presionada la imagen → <i>Descargar/Guardar imagen</i>; en <b>PC</b> clic derecho → <i>Guardar como</i>. El PDF se puede abrir con “Abrir” y guardar o imprimir desde el visor.';
+const FRAME='⚠️ La app está abierta dentro de una <b>vista previa</b> (OneDrive, Teams o correo) que bloquea descargas y compartir. Descargue el archivo .html y ábralo con Edge/Chrome, o use la app instalada desde GitHub.<br>';
+function getFilesNow(){return files&&files.pages===pages?files:null}
+
+$('#rpPdf').onclick=async()=>{const F=getFilesNow()||await getFiles();
+  if(inFrame)return showFiles([F.pdf],'Reporte en PDF',FRAME+HELP);
+  download(F.pdf,F.pdf.name);toast('PDF descargado ✔ (carpeta Descargas)',4000)};
+$('#rpSharePdf').onclick=async()=>{const F=getFilesNow()||await getFiles();
+  if(!await share([F.pdf],cur.folio))showFiles([F.pdf],'Compartir PDF',(inFrame?FRAME:'')+'Este equipo/navegador no permite compartir directo (normal en PC). Descargue el PDF y adjúntelo en WhatsApp, Teams o correo.<br>'+HELP)};
+$('#rpImg').onclick=async()=>{const F=getFilesNow()||await getFiles();
+  if(!inFrame&&F.jpgs.length===1){download(F.jpgs[0],F.jpgs[0].name);toast('Imagen descargada ✔',4000)}
+  else showFiles(F.jpgs,'Imágenes JPG del reporte',(inFrame?FRAME:'Descargue cada página con su botón.<br>')+HELP)};
+$('#rpShareImg').onclick=async()=>{const F=getFilesNow()||await getFiles();
+  if(!await share(F.jpgs,cur.folio))showFiles(F.jpgs,'Compartir imágenes',(inFrame?FRAME:'')+'Este equipo/navegador no permite compartir directo (normal en PC). Descargue las imágenes y adjúntelas en WhatsApp, Teams o correo.<br>'+HELP)};
+$('#rpFotos').onclick=async()=>{if(!cur.fotos.length)return toast('No hay fotos');busy(true);const fs=[];
+  try{for(let i=0;i<cur.fotos.length;i++){const c=await renderAnnotated(cur.fotos[i]);fs.push(new File([await canvasBlob(c,'image/jpeg',.92)],`${baseName()}_foto${i+1}.jpg`,{type:'image/jpeg'}))}}finally{busy(false)}
+  showFiles(fs,'Fotos anotadas',(inFrame?FRAME:'')+HELP)};
+
+/* ===== Impresión robusta ===== */
+const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isStandalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+let inFrame=false;try{inFrame=window.self!==window.top}catch(e){inFrame=true}
+async function printViaPDF(msg){
+  if(inFrame){const F=await getFiles();return showFiles([F.pdf],'Imprimir reporte',FRAME+'Descargue el PDF y ábralo para imprimir.<br>'+HELP)}
+  busy(true);let b;try{b=await pdfBlob()}finally{busy(false)}
+  const f=new File([b],baseName()+'.pdf',{type:'application/pdf'});
+  const url=URL.createObjectURL(b),w=window.open(url,'_blank');
+  if(w){toast(msg||'Se abrió el PDF: use el botón Imprimir del visor.',5000)}
+  else if(await share([f],cur.folio)){toast('Elija una app de impresión o “Imprimir” en el menú de compartir.',5000)}
+  else{download(b,f.name);toast('Se descargó el PDF: ábralo e imprímalo desde el visor.',5000)}
+  setTimeout(()=>URL.revokeObjectURL(url),120000);
+}
+async function printReport(){
+  if(typeof window.print!=='function'||inFrame||(isIOS&&isStandalone))
+    return printViaPDF(inFrame?'La vista previa (OneDrive/Teams) bloquea la impresión. Se abrió el PDF para imprimir.':null);
+  const P=await getPages();busy(true);
+  try{
+    const srcs=P.map(c=>c.toDataURL('image/jpeg',.92));
+    const fr=document.createElement('iframe');
+    fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(fr);
+    const d=fr.contentDocument;d.open();
+    d.write(`<!DOCTYPE html><html><head><title>${esc(cur.folio)}</title><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}img{display:block;width:210mm;height:296.5mm;object-fit:contain;break-after:page;page-break-after:always}img:last-child{break-after:auto;page-break-after:auto}</style></head><body>${srcs.map(s=>`<img src="${s}">`).join('')}</body></html>`);
+    d.close();
+    await Promise.all([...d.images].map(i=>i.decode?i.decode().catch(()=>{}):new Promise(r=>{i.complete?r():(i.onload=i.onerror=r)})));
+    await new Promise(r=>setTimeout(r,250));
+    busy(false);
+    fr.contentWindow.focus();fr.contentWindow.print();
+    setTimeout(()=>fr.remove(),60000);
+  }catch(e){busy(false);console.warn(e);printViaPDF('No se pudo abrir la impresión directa; se abrió el PDF para imprimir.')}
+}
+$('#rpPrint').onclick=printReport;
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='p'&&view==='reporte'&&cur){e.preventDefault();printReport()}});
+
+/* ===== Respaldo ===== */
+async function exportJSON(records,name,full=true){
+  const data={app:'FotoReporte TPM',version:1,exportado:new Date().toISOString(),settings:full?S:undefined,records};
+  download(new Blob([JSON.stringify(data)],{type:'application/json'}),name);
+  if(full){S.lastBackup=Date.now();await saveSettings()}toast('Respaldo exportado ✔');
+}
+async function exportAll(){busy(true);try{const r=await dbAll();await exportJSON(r,`Respaldo_FotoReporteTPM_${today()}.json`)}finally{busy(false)}if(view==='lista')renderLista();if(view==='respaldo')renderRespaldo()}
+async function renderRespaldo(){const r=await dbAll();const nf=r.reduce((a,x)=>a+x.fotos.length,0);const mb=(JSON.stringify(r).length/1048576).toFixed(1);
+  $('#bkStats').innerHTML=`Registros: <b>${r.length}</b> · Fotos: <b>${nf}</b> · Tamaño aprox.: <b>${mb} MB</b> · Último respaldo: <b>${S.lastBackup?new Date(S.lastBackup).toLocaleString('es-MX'):'nunca'}</b>${db?'':' · ⚠️ almacenamiento temporal'}`}
+$('#bkExport').onclick=exportAll;
+$('#bkImport').onclick=()=>$('#inJson').click();
+$('#inJson').onchange=async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;
+  try{const d=JSON.parse(await file.text());const list=Array.isArray(d)?d:d.records;if(!Array.isArray(list))throw new Error('Archivo no válido');
+    const mode=$('#bkMode').value;if(mode==='replace'&&!confirm('Se BORRARÁN los registros actuales y se reemplazarán por los del archivo. ¿Continuar?'))return;
+    busy(true);if(mode==='replace')await dbClear();
+    let n=0;for(const r of list){if(!r||!r.id||!Array.isArray(r.fotos))continue;r.fotos.forEach(f=>{f.boxes=f.boxes||[];f.caption=f.caption||''});await dbPut(r);n++}
+    if(d.settings&&(mode==='replace'||confirm('El respaldo incluye configuración (empresa, logo, folios). ¿Aplicarla también?'))){S={...DEF,...d.settings,lastBackup:S.lastBackup};await saveSettings()}
+    busy(false);toast(`${n} registro(s) importado(s) ✔`);renderRespaldo();recs=await dbAll();
+  }catch(err){busy(false);alert('No se pudo importar: '+err.message)}};
+$('#bkCsv').onclick=async()=>{const r=(await dbAll()).sort((a,b)=>a.folio.localeCompare(b.folio));
+  const H=['Folio','Fecha','Hora','Área','Equipo','Ubicación','Tipo','Prioridad','Estado','Detectado por','Responsable','Fecha compromiso','Descripción','Acción','Observaciones','Fotos','Recuadros','Puntos señalados'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""').replace(/\r?\n/g,' ')+'"';
+  const rows=r.map(x=>[x.folio,fmtDate(x.fecha),x.hora,x.area,x.equipo,x.ubicacion,x.tipo,x.prioridad,x.estado,x.detecto,x.responsable,fmtDate(x.fcompromiso),x.descripcion,x.accion,x.obs,x.fotos.length,
+    x.fotos.reduce((a,f)=>a+f.boxes.length,0),x.fotos.flatMap((f,i)=>f.boxes.map((b,k)=>`F${i+1}-${k+1} [${COL[b.color].name}] ${b.text}`)).join(' | ')].map(q).join(','));
+  download(new Blob(['\ufeff'+[H.map(q).join(','),...rows].join('\r\n')],{type:'text/csv;charset=utf-8'}),`Lista_FotoReporteTPM_${today()}.csv`);toast('Lista exportada ✔')};
+$('#bkWipe').onclick=async()=>{if(confirm('¿Borrar TODOS los registros?')&&prompt('Escriba BORRAR para confirmar')==='BORRAR'){await dbClear();cur=null;toast('Registros eliminados');renderRespaldo()}};
+
+/* ===== Configuración ===== */
+function renderConfig(){$('#cfEmpresa').value=S.empresa;$('#cfPlanta').value=S.planta;$('#cfTitulo').value=S.titulo;$('#cfPrefijo').value=S.prefijo;$('#cfContador').value=S.contador;
+  $('#cfTipos').value=S.tipos;$('#cfAreas').value=S.areas;const l=$('#cfLogoPrev');l.src=S.logo||'';l.style.display=S.logo?'block':'none'}
+$('#cfSave').onclick=async()=>{Object.assign(S,{empresa:$('#cfEmpresa').value.trim(),planta:$('#cfPlanta').value.trim(),titulo:$('#cfTitulo').value.trim()||DEF.titulo,
+  prefijo:$('#cfPrefijo').value.trim()||'TPM',contador:+$('#cfContador').value||0,tipos:$('#cfTipos').value,areas:$('#cfAreas').value});await saveSettings();pages=null;toast('Configuración guardada ✔')};
+$('#cfLogoBtn').onclick=()=>$('#inLogo').click();
+$('#inLogo').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const url=URL.createObjectURL(f);const img=await loadImg(url);
+  const k=Math.min(1,400/img.naturalWidth),c=document.createElement('canvas');c.width=img.naturalWidth*k;c.height=img.naturalHeight*k;c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  S.logo=c.toDataURL('image/png');URL.revokeObjectURL(url);await saveSettings();renderConfig();toast('Logotipo cargado')};
+$('#cfLogoDel').onclick=async()=>{S.logo='';await saveSettings();renderConfig()};
+
+/* ===== Instalación (PWA) ===== */
+try{if(!inFrame&&'serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
+let instEv=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;$('#btnInstall').classList.remove('hidden')});
+$('#btnInstall').onclick=async()=>{if(!instEv)return;instEv.prompt();await instEv.userChoice;instEv=null;$('#btnInstall').classList.add('hidden')};
+addEventListener('appinstalled',()=>toast('Aplicación instalada ✔'));
+
+/* ===== Inicio ===== */
+(async()=>{
+  if(inFrame)$('#frameBanner').classList.remove('hidden');
+  try{db=await openDB();if(navigator.storage?.persist)navigator.storage.persist()}catch(e){db=null}
+  try{const s=await kvGet('settings');if(s)S={...DEF,...s}}catch(e){}
+  go('lista',false);
+})();
+addEventListener('beforeunload',()=>{if(cur)saveNow()});
+</script>
+</body>
+</html>

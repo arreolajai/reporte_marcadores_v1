@@ -1,0 +1,6 @@
+FotoReporte TPM - Paquete para GitHub Pages
+1. Cree un repositorio en github.com (ej. fotoreporte-tpm).
+2. Suba los 5 archivos: index.html, manifest.json, sw.js, icon-192.png, icon-512.png
+3. Settings > Pages > Source: "Deploy from a branch" > Branch: main / (root) > Save.
+4. Espere 1-2 min. La URL será: https://SU-USUARIO.github.io/fotoreporte-tpm/
+5. Abra esa URL en Chrome/Edge (Android, PC) o Safari (iPhone/iPad) e instale.
