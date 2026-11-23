@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="theme-color" content="#0f2a44">
-<title>FotoReporte TPM</title>
+<title>FotoReporte MANTENIMIENTO</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -112,13 +112,13 @@ a.btnA.ok{background:#15803d}a.btnA.sec{background:#fff;color:var(--azul);border
 
 <header class="top">
   <button id="btnMenu" title="Menú">☰</button>
-  <div class="brand"><b>FotoReporte TPM</b><small>Registro fotográfico de hallazgos · Offline · <b style="color:#facc15">v4</b></small></div>
+  <div class="brand"><b>FotoReporte MANTENIMIENTO><small>Registro fotográfico de hallazgos · Offline · <b style="color:#facc15">v4</b></small></div>
   <div id="hdrFolio"></div>
 </header>
 
 <div id="frameBanner" class="hidden" style="background:#dc2626;color:#fff;padding:12px 14px;font-size:15px;line-height:1.4">
   ⛔ <b>La app está abierta dentro de una VISTA PREVIA</b> (Copilot, OneDrive, Teams o correo). Ahí el navegador <b>bloquea</b> descargar, compartir, imprimir y guardar registros.<br>
-  ✅ <b>Solución:</b> descargue el archivo <b>FotoReporte_TPM_v4.html</b> a su equipo y ábralo con doble clic en <b>Edge o Chrome</b>.
+  ✅ <b>Solución:</b> descargue el archivo <b>FotoReporte_MANTENIMIENTO_v4.html</b> a su equipo y ábralo con doble clic en <b>Edge o Chrome</b>.
 </div>
 <nav id="menu" class="menu hidden">
   <button data-go="lista">📋 Registros</button>
@@ -352,7 +352,7 @@ const COL={red:{rgb:'220,38,38',txt:'#ffffff',name:'ROJO'},yellow:{rgb:'250,204,
 
 /* ===== Almacenamiento local (IndexedDB) ===== */
 let db=null; const mem={records:new Map(),kv:new Map()};
-function openDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open('FotoReporteTPM',1);
+function openDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open('FotoReporteMANTENIMIENTO',1);
   r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('records',{keyPath:'id'});d.createObjectStore('kv',{keyPath:'k'})};
   r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
 function idb(store,mode,fn){return new Promise((res,rej)=>{const t=db.transaction(store,mode);const req=fn(t.objectStore(store));
@@ -366,7 +366,7 @@ const kvGet=async k=>{if(!db)return mem.kv.get(k);const o=await idb('kv','readon
 const kvSet=async(k,v)=>db?idb('kv','readwrite',s=>s.put({k,v})):mem.kv.set(k,v);
 
 /* ===== Estado ===== */
-const DEF={empresa:'',planta:'',titulo:'REPORTE FOTOGRÁFICO DE HALLAZGOS TPM',prefijo:'TPM',contador:0,logo:'',
+const DEF={empresa:'',planta:'',titulo:'REPORTE FOTOGRÁFICO DE HALLAZGOS MANTENIMIENTO',prefijo:'MANTENIMIENTO',contador:0,logo:'',
   tipos:'Tarjeta Roja - Mantenimiento\nTarjeta Amarilla - Operación / Seguridad\nCondición insegura\nFuga (aire / aceite / agua / gas)\nMejora / Kaizen\nInspección de rutina',
   areas:'',lastBackup:null};
 let S={...DEF}, cur=null, view='lista', hist=[], recs=[];
@@ -654,7 +654,7 @@ async function buildPages(rec){
     x.font='bold 17px Arial';x.fillText(s[0],sx+sw/2,y+80);x.textAlign='left'});
   const gen=new Date().toLocaleString('es-MX');
   out.forEach((p,i)=>{const g=p.getContext('2d');g.fillStyle='#e2e8f0';g.fillRect(0,PH-50,PW,50);g.fillStyle='#475569';g.font='16px Arial';g.textBaseline='middle';
-    g.textAlign='left';g.fillText(`${rec.folio} · Generado ${gen} · FotoReporte TPM`,M,PH-25);g.textAlign='right';g.fillText(`Página ${i+1} de ${out.length}`,PW-M,PH-25)});
+    g.textAlign='left';g.fillText(`${rec.folio} · Generado ${gen} · FotoReporte MANTENIMIENTO`,M,PH-25);g.textAlign='right';g.fillText(`Página ${i+1} de ${out.length}`,PW-M,PH-25)});
   return out;
 }
 /* ===== PDF nativo ===== */
@@ -769,11 +769,11 @@ addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()===
 
 /* ===== Respaldo ===== */
 async function exportJSON(records,name,full=true){
-  const data={app:'FotoReporte TPM',version:1,exportado:new Date().toISOString(),settings:full?S:undefined,records};
+  const data={app:'FotoReporte MANTENIMIENTO',version:1,exportado:new Date().toISOString(),settings:full?S:undefined,records};
   download(new Blob([JSON.stringify(data)],{type:'application/json'}),name);
   if(full){S.lastBackup=Date.now();await saveSettings()}toast('Respaldo exportado ✔');
 }
-async function exportAll(){busy(true);try{const r=await dbAll();await exportJSON(r,`Respaldo_FotoReporteTPM_${today()}.json`)}finally{busy(false)}if(view==='lista')renderLista();if(view==='respaldo')renderRespaldo()}
+async function exportAll(){busy(true);try{const r=await dbAll();await exportJSON(r,`Respaldo_FotoReporteMANTENIMIENTO_${today()}.json`)}finally{busy(false)}if(view==='lista')renderLista();if(view==='respaldo')renderRespaldo()}
 async function renderRespaldo(){const r=await dbAll();const nf=r.reduce((a,x)=>a+x.fotos.length,0);const mb=(JSON.stringify(r).length/1048576).toFixed(1);
   $('#bkStats').innerHTML=`Registros: <b>${r.length}</b> · Fotos: <b>${nf}</b> · Tamaño aprox.: <b>${mb} MB</b> · Último respaldo: <b>${S.lastBackup?new Date(S.lastBackup).toLocaleString('es-MX'):'nunca'}</b>${db?'':' · ⚠️ almacenamiento temporal'}`}
 $('#bkExport').onclick=exportAll;
@@ -791,14 +791,14 @@ $('#bkCsv').onclick=async()=>{const r=(await dbAll()).sort((a,b)=>a.folio.locale
   const q=v=>'"'+String(v??'').replace(/"/g,'""').replace(/\r?\n/g,' ')+'"';
   const rows=r.map(x=>[x.folio,fmtDate(x.fecha),x.hora,x.area,x.equipo,x.ubicacion,x.tipo,x.prioridad,x.estado,x.detecto,x.responsable,fmtDate(x.fcompromiso),x.descripcion,x.accion,x.obs,x.fotos.length,
     x.fotos.reduce((a,f)=>a+f.boxes.length,0),x.fotos.flatMap((f,i)=>f.boxes.map((b,k)=>`F${i+1}-${k+1} [${COL[b.color].name}] ${b.text}`)).join(' | ')].map(q).join(','));
-  download(new Blob(['\ufeff'+[H.map(q).join(','),...rows].join('\r\n')],{type:'text/csv;charset=utf-8'}),`Lista_FotoReporteTPM_${today()}.csv`);toast('Lista exportada ✔')};
+  download(new Blob(['\ufeff'+[H.map(q).join(','),...rows].join('\r\n')],{type:'text/csv;charset=utf-8'}),`Lista_FotoReporteMANTENIMIENTO_${today()}.csv`);toast('Lista exportada ✔')};
 $('#bkWipe').onclick=async()=>{if(confirm('¿Borrar TODOS los registros?')&&prompt('Escriba BORRAR para confirmar')==='BORRAR'){await dbClear();cur=null;toast('Registros eliminados');renderRespaldo()}};
 
 /* ===== Configuración ===== */
 function renderConfig(){$('#cfEmpresa').value=S.empresa;$('#cfPlanta').value=S.planta;$('#cfTitulo').value=S.titulo;$('#cfPrefijo').value=S.prefijo;$('#cfContador').value=S.contador;
   $('#cfTipos').value=S.tipos;$('#cfAreas').value=S.areas;const l=$('#cfLogoPrev');l.src=S.logo||'';l.style.display=S.logo?'block':'none'}
 $('#cfSave').onclick=async()=>{Object.assign(S,{empresa:$('#cfEmpresa').value.trim(),planta:$('#cfPlanta').value.trim(),titulo:$('#cfTitulo').value.trim()||DEF.titulo,
-  prefijo:$('#cfPrefijo').value.trim()||'TPM',contador:+$('#cfContador').value||0,tipos:$('#cfTipos').value,areas:$('#cfAreas').value});await saveSettings();pages=null;toast('Configuración guardada ✔')};
+  prefijo:$('#cfPrefijo').value.trim()||'MANTENIMIENTO',contador:+$('#cfContador').value||0,tipos:$('#cfTipos').value,areas:$('#cfAreas').value});await saveSettings();pages=null;toast('Configuración guardada ✔')};
 $('#cfLogoBtn').onclick=()=>$('#inLogo').click();
 $('#inLogo').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const url=URL.createObjectURL(f);const img=await loadImg(url);
   const k=Math.min(1,400/img.naturalWidth),c=document.createElement('canvas');c.width=img.naturalWidth*k;c.height=img.naturalHeight*k;c.getContext('2d').drawImage(img,0,0,c.width,c.height);
